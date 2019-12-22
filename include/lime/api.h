@@ -118,7 +118,7 @@ if ((temporary)->failure) {\
  */
 #define LIME_STACK_PUSH_VALUE_USE_FRESH_TEMPORARY(stack, temporary, value) {\
     LimeResult temporary;\
-    LIME_STACK_PUSH_VALUE_USE_TEMPORARY(stack, temporary, value);\
+    LIME_STACK_PUSH_VALUE_USE_TEMPORARY(stack, &temporary, value);\
 }
 
 /**
