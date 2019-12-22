@@ -33,6 +33,107 @@ if (*(stack)->datastack == NULL) {\
 *(stack)->datastack = (*(stack)->datastack)->list.tail;
 
 /**
+ * Assigns the provided 'value' to the given 'temporary' variable and checks 
+ * whether the computation of this value was successful (in which case the 
+ * result value is assigned to the provided 'variable') or not (in which case
+ * the exception is returned).
+ * @param variable A memory location where the resulting value should be stored.
+ * @param temporary A memory location where the value should be temporarily stored.
+ * @param A value of type 'LimeResult'. 
+ */
+#define LIME_TRY_USE_TEMPORARY(variable, temporary, value) \
+*(temporary) = (value);\
+if ((temporary)->failure) {\
+    return (temporary)->exception;\
+} else {\
+    *(variable) = (temporary)->_LIME_RESULT_VALUE_FIELD_NAME;\
+}
+
+/**
+ * Creates a new temporary variable, assigns the provided 'value' to it and 
+ * checks whether the computation of this value was successful (in which case 
+ * the result value is assigned to the provided 'variable') or not (in which 
+ * case the exception is returned).
+ * @param variable A memory location where the resulting value should be stored.
+ * @param temporary A name for the temporary variable.
+ * @param A value of type 'LimeResult'. 
+ */
+#define LIME_TRY_USE_FRESH_TEMPORARY(variable, temporary, value) {\
+    LimeResult temporary;\
+    LIME_TRY_USE_TEMPORARY(variable, &temporary, value);\
+}
+
+/**
+ * Checks whether the computation of the provided value was successful (in 
+ * which case the result value is assigned to the provided 'variable') or 
+ * not (in which case the exception is returned).
+ * A temporary variable named '_result__LINE__' (where __LINE__ is the current
+ * line number) is used for this purpose. That is, neither the provided variable
+ * nor the value should contain an identifier that is equally named.
+ * @param variable A memory location where the resulting value should be stored.
+ * @param A value of type 'LimeResult'. 
+ */
+#define LIME_TRY(variable, value) LIME_TRY_USE_FRESH_TEMPORARY(variable, CONCAT(_result, __LINE__), value)
+
+/**
+ * Returns a designated initializer for a static string constant. 
+ * @param string The string literal.
+ * @return A designated initializer for the type 'LimeValue'.
+ */
+#define LIME_STRING_STATIC_CONSTANT(string) {\
+    .type = LimeStringValue,\
+    .location = NULL,\
+    .hash = 0,\
+    .symbol = {\
+        .length = sizeof(string) - 1,\
+        .bytes = string\
+    }\
+}
+
+/**
+ * The name of the 'value' field for the 'LimeResult' type.
+ * @internal
+ */
+#define _LIME_RESULT_VALUE_FIELD_NAME value
+
+/**
+ * Assigns the provided 'value' to the given 'temporary' variable and checks 
+ * whether the computation of the provided value was successful (in which 
+ * case the result value is pushed to the datastack) or not (in which case 
+ * the exception is returned).
+ * @param stack The stack of the current environment.
+ * @param temporary A memory location where the value should be temporarily stored.
+ * @param A value of type 'LimeResult'.
+ */
+#define LIME_STACK_PUSH_VALUE_USE_TEMPORARY(stack, temporary, value) LIME_TRY_USE_TEMPORARY((stack)->datastack, (temporary), lime_list((stack), (value), *((stack)->datastack)))
+
+/**
+ * Creates a new temporary variable, assigns the provided 'value' to it and 
+ * checks whether the computation of the provided value was successful (in 
+ * which case the result value is pushed to the datastack) or not (in which 
+ * case the exception is returned).
+ * @param stack The stack of the current environment.
+ * @param temporary A name for the temporary variable.
+ * @param A value of type 'LimeResult'.
+ */
+#define LIME_STACK_PUSH_VALUE_USE_FRESH_TEMPORARY(stack, temporary, value) {\
+    LimeResult temporary;\
+    LIME_STACK_PUSH_VALUE_USE_TEMPORARY(stack, temporary, value);\
+}
+
+/**
+ * Checks whether the computation of the provided value was successful (in 
+ * which case the result value is pushed to the datastack) or not (in which 
+ * case the exception is returned).
+ * A temporary variable named '_result__LINE__' (where __LINE__ is the current
+ * line number) is used for this purpose. That is, neither the provided stack
+ * nor the value should contain an identifier that is equally named.
+ * @param stack The stack of the current environment.
+ * @param A value of type 'LimeResult'.
+ */
+#define LIME_STACK_PUSH_VALUE(stack, value) LIME_STACK_PUSH_VALUE_USE_FRESH_TEMPORARY(stack, CONCAT(_result, __LINE__), value)
+
+/**
  * A preallocated sentinel value which can be used for any purpose where it is
  * required to pass dummy data that is not used in any meaningful way.
  * 
@@ -91,6 +192,14 @@ extern LimeValue lime_collect_garbage(LimeStack stack);
  * @return Either the allocated value or the exception.
  */
 extern LimeResult lime_allocate(LimeStack stack, LimeValueType type, u64 additional);
+
+/**
+ * Creates an exact copy of the provided value.
+ * @param stack The current stack of the environment.
+ * @param value The value which should be cloned.
+ * @return Either the copy of the provided value or the exception.
+ */
+extern LimeResult lime_value_clone(LimeStack stack, LimeValue value);
 
 /** 
  * Retrieves the value from the provided map which is associated with the specified

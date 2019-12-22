@@ -31,4 +31,18 @@ typedef int8_t  s8;
 #include <windows.h>
 #endif
 
+/**
+ * A helper for the 'CONCAT' macro. 
+ * @internal
+ */
+#define _CONCAT(x, y) x ## y
+
+/**
+ * Concatenates the two provided arguments.
+ * @param x The first argument.
+ * @param y The second argument.
+ * @return The concatenation of 'x' and 'y'.
+ */
+#define CONCAT(x, y) _CONCAT(x, y)
+
 #endif
