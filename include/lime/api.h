@@ -20,6 +20,19 @@ typedef struct {
 } LimeResult;
 
 /**
+ * Pops a value from the datastack or returns an exception value if the datastack is
+ * empty.
+ * @param stack The current stack of the environment.
+ * @param variable A pointer to a memory location where the popped value should be stored.
+ */
+#define LIME_STACK_POP_VALUE(stack, variable) \
+if (*(stack)->datastack == NULL) {\
+    return lime_exception((stack), "stack underflow in function '%s'", __FUNCTION__);\
+}\
+*(variable) = (*(stack)->datastack)->list.head;\
+*(stack)->datastack = (*(stack)->datastack)->list.tail;
+
+/**
  * A preallocated sentinel value which can be used for any purpose where it is
  * required to pass dummy data that is not used in any meaningful way.
  * 
