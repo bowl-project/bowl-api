@@ -67,6 +67,18 @@ extern void lime_value_debug(LimeValue value, char *message, ...);
  */
 extern LimeValue lime_collect_garbage(LimeStack stack);
 
+/**
+ * Allocates memory for the provided value type including any additional bytes.
+ * Value type dependent fields are not initialized by this function. That is,
+ * to ensure that the garbage collector can work correctly, it is required to
+ * initialize all structure members before any other allocation.
+ * @param stack The current stack of the environment.
+ * @param type The type of the value.
+ * @param additional The number of additional bytes which should be allocated.
+ * @return Either the allocated value or the exception.
+ */
+extern LimeResult lime_allocate(LimeStack stack, LimeValueType type, u64 additional);
+
 /** 
  * Retrieves the value from the provided map which is associated with the specified
  * key or returns a default value if there is no value associated with the key.
