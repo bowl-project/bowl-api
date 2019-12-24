@@ -184,11 +184,10 @@ extern LimeValue lime_collect_garbage(LimeStack stack);
 /**
  * Tokenizes the provided string by separating values at white space characters.
  * @param stack The current stack of the environment.
- * @param bytes The string which should be tokenized.
- * @param length The length of the string.
+ * @param string The string which should be tokenized.
  * @return Either a list of all tokens or an exception.
  */
-extern LimeResult lime_tokens(LimeStack stack, u8 *bytes, u64 length);
+extern LimeResult lime_tokens(LimeStack stack, LimeValue string);
 
 /**
  * Allocates memory for the provided value type including any additional bytes.
