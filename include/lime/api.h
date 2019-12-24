@@ -182,6 +182,15 @@ extern void lime_value_debug(LimeValue value, char *message, ...);
 extern LimeValue lime_collect_garbage(LimeStack stack);
 
 /**
+ * Tokenizes the provided string by separating values at white space characters.
+ * @param stack The current stack of the environment.
+ * @param bytes The string which should be tokenized.
+ * @param length The length of the string.
+ * @return Either a list of all tokens or an exception.
+ */
+extern LimeResult lime_tokens(LimeStack stack, u8 *bytes, u64 length);
+
+/**
  * Allocates memory for the provided value type including any additional bytes.
  * Value type dependent fields are not initialized by this function. That is,
  * to ensure that the garbage collector can work correctly, it is required to
