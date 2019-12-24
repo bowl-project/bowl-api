@@ -21,7 +21,7 @@ typedef int32_t s32;
 typedef int16_t s16;
 typedef int8_t  s8;
 
-#if defined(unix) || defined(__unix__) || defined(__unix)
+#if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__)
 #define OS_UNIX
 #elif defined(_WIN32) || defined(_WIN64)
 #define OS_WINDOWS
