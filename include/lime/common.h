@@ -8,6 +8,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <inttypes.h>
+#include <ctype.h>
+#include <math.h>
 
 typedef uint64_t u64;
 typedef uint32_t u32;
