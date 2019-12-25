@@ -21,12 +21,6 @@ typedef int32_t s32;
 typedef int16_t s16;
 typedef int8_t  s8;
 
-#if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__)
-
-#elif defined(_WIN32) || defined(_WIN64)
-
-#endif
-
 #if _WIN64 || (__GNUC__ && (__x86_64__ || __ppc64__))
 #define OS_ARCHITECTURE_64
 #define OS_ARCHITECTURE "64-bit"
