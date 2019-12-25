@@ -134,6 +134,16 @@ if ((temporary)->failure) {\
 #define LIME_STACK_PUSH_VALUE(stack, value) LIME_STACK_PUSH_VALUE_USE_FRESH_TEMPORARY(stack, CONCAT(_result, __LINE__), value)
 
 /**
+ * The path to the kernel library as defined by the CLI.
+ */
+extern const char *const lime_settings_kernel_path;
+
+/**
+ * The level of verbosity as defined by the CLI.
+ */
+extern const u64 const lime_settings_verbosity;
+
+/**
  * A preallocated sentinel value which can be used for any purpose where it is
  * required to pass dummy data that is not used in any meaningful way.
  * 
