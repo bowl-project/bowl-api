@@ -28,9 +28,9 @@ typedef int8_t  s8;
 #endif
 
 #if _WIN64 || (__GNUC__ && (__x86_64__ || __ppc64__))
-#define OS_ARCHITECTURE_64
+#define OS_ARCHITECTURE_64 "64-bit"
 #else 
-#define OS_ARCHITECTURE_32
+#define OS_ARCHITECTURE_32 "32-bit"
 #endif
 
 #if __APPLE__ || __MACH__
