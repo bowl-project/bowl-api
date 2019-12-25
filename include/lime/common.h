@@ -22,26 +22,33 @@ typedef int16_t s16;
 typedef int8_t  s8;
 
 #if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__)
-#define OS_UNIX
+
 #elif defined(_WIN32) || defined(_WIN64)
-#define OS_WINDOWS
+
 #endif
 
 #if _WIN64 || (__GNUC__ && (__x86_64__ || __ppc64__))
-#define OS_ARCHITECTURE_64 "64-bit"
+#define OS_ARCHITECTURE_64
+#define OS_ARCHITECTURE "64-bit"
 #else 
-#define OS_ARCHITECTURE_32 "32-bit"
+#define OS_ARCHITECTURE_32
+#define OS_ARCHITECTURE "32-bit"
 #endif
 
 #if __APPLE__ || __MACH__
+#define OS_UNIX
 #define OS_NAME "Mac OS X";
 #elif _WIN32 || _WIN64
+#define OS_WINDOWS
 #define OS_NAME "Windows";
 #elif __linux__
+#define OS_UNIX
 #define OS_NAME "Linux";
 #elif __FreeBSD__
+#define OS_UNIX
 #define OS_NAME "FreeBSD";
-#elif __unix || __unix__
+#elif unix || __unix || __unix__
+#define OS_UNIX
 #define OS_NAME "Unix";
 #else
 #define OS_NAME "Unknown";
