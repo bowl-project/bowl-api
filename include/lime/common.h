@@ -31,21 +31,21 @@ typedef int8_t  s8;
 
 #if __APPLE__ || __MACH__
 #define OS_UNIX
-#define OS_NAME "Mac OS X";
+#define OS_NAME "Mac OS X"
 #elif _WIN32 || _WIN64
 #define OS_WINDOWS
-#define OS_NAME "Windows";
+#define OS_NAME "Windows"
 #elif __linux__
 #define OS_UNIX
-#define OS_NAME "Linux";
+#define OS_NAME "Linux"
 #elif __FreeBSD__
 #define OS_UNIX
-#define OS_NAME "FreeBSD";
+#define OS_NAME "FreeBSD"
 #elif unix || __unix || __unix__
 #define OS_UNIX
-#define OS_NAME "Unix";
+#define OS_NAME "Unix"
 #else
-#define OS_NAME "Unknown";
+#define OS_NAME "Unknown"
 #endif
 
 #if defined(OS_UNIX)
