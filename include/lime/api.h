@@ -83,7 +83,7 @@ if ((temporary)->failure) {\
  */
 #define LIME_ASSERT_TYPE(value, type) \
 if (((value) == NULL && (type) != LimeListValue) || ((value) != NULL && (value)->type != (type))) {\
-    return lime_exception((stack), "argument of illegal type '%s' in function '%s' (expected type '%s')", lime_value_type(value) __FUNCTION__, lime_type_name(type));\
+    return lime_exception((stack), "argument of illegal type '%s' in function '%s' (expected type '%s')", lime_value_type(value), __FUNCTION__, lime_type_name(type));\
 }
 
 /**
