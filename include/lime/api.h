@@ -236,6 +236,24 @@ extern LimeResult lime_allocate(LimeStack stack, LimeValueType type, u64 additio
  */
 extern LimeResult lime_value_clone(LimeStack stack, LimeValue value);
 
+/**
+ * Deletes the specified key from the provided map.
+ * @param stack The stack of the current environment.
+ * @param map The map whose key should be deleted.
+ * @param key The key to delete.
+ * @return Either the map where the provided key is not present anymore or an exception.
+ */
+LimeResult lime_map_delete(LimeStack stack, LimeValue map, LimeValue key);
+
+/**
+ * Merges the two provided maps into a new one.
+ * @param stack The stack of the current environment.
+ * @param a The first map.
+ * @param b The second map.
+ * @return Either a map which contains all the keys of the two provided ones or an exception.
+ */
+LimeResult lime_map_merge(LimeStack stack, LimeValue a, LimeValue b);
+
 /** 
  * Retrieves the value from the provided map which is associated with the specified
  * key or returns a default value if there is no value associated with the key.
