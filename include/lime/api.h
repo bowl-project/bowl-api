@@ -76,13 +76,25 @@ if ((temporary)->failure) {\
 #define LIME_TRY(variable, value) LIME_TRY_USE_FRESH_TEMPORARY(variable, CONCAT(_result, __LINE__), value)
 
 /**
+ * The name of the 'value' field for the 'LimeResult' type.
+ * @internal
+ */
+#define _LIME_RESULT_VALUE_FIELD_NAME value
+
+/**
+ * The name of the 'type' field for the 'LimeValue' type.
+ * @internal
+ */
+#define _LIME_VALUE_TYPE_FIELD_NAME type
+
+/**
  * Asserts that the given value has the provided type and throws an exception
  * if this is not the case.
  * @param value The value whose type should be checked.
  * @param type The expected type.
  */
 #define LIME_ASSERT_TYPE(value, type) \
-if (((value) == NULL && (type) != LimeListValue) || ((value) != NULL && (value)->type != (type))) {\
+if (((value) == NULL && (type) != LimeListValue) || ((value) != NULL && (value)->_LIME_VALUE_TYPE_FIELD_NAME != (type))) {\
     return lime_exception((stack), "argument of illegal type '%s' in function '%s' (expected type '%s')", lime_value_type(value), __FUNCTION__, lime_type_name(type));\
 }
 
@@ -100,12 +112,6 @@ if (((value) == NULL && (type) != LimeListValue) || ((value) != NULL && (value)-
         .bytes = string\
     }\
 }
-
-/**
- * The name of the 'value' field for the 'LimeResult' type.
- * @internal
- */
-#define _LIME_RESULT_VALUE_FIELD_NAME value
 
 /**
  * Assigns the provided 'value' to the given 'temporary' variable and checks 
