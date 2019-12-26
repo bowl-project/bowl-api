@@ -76,6 +76,17 @@ if ((temporary)->failure) {\
 #define LIME_TRY(variable, value) LIME_TRY_USE_FRESH_TEMPORARY(variable, CONCAT(_result, __LINE__), value)
 
 /**
+ * Asserts that the given value has the provided type and throws an exception
+ * if this is not the case.
+ * @param value The value whose type should be checked.
+ * @param type The expected type.
+ */
+#define LIME_ASSERT_TYPE(value, type) \
+if (((value) == NULL && (type) != LimeListValue) || ((value) != NULL && (value)->type != (type))) {\
+    return lime_exception((stack), "argument of illegal type '%s' in function '%s' (expected type '%s')", lime_value_type(value) __FUNCTION__, lime_type_name(type));\
+}
+
+/**
  * Returns a designated initializer for a static string constant. 
  * @param string The string literal.
  * @return A designated initializer for the type 'LimeValue'.
@@ -328,6 +339,13 @@ extern u64 lime_value_length(LimeValue value);
  * @return The string representation of the value's type.
  */
 extern char *lime_value_type(LimeValue value);
+
+/**
+ * Returns a string representation of the provided type.
+ * @param type The type whose string representation should be returned.
+ * @return The string representation of the type.
+ */
+extern char *lime_type_name(LimeValueType type);
 
 /**
  * Creates a new string exception on basis of the message and its format data.
