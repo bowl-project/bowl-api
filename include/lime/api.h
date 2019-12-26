@@ -147,12 +147,12 @@ if (((value) == NULL && (type) != LimeListValue) || ((value) != NULL && (value)-
 /**
  * The path to the kernel library as defined by the CLI.
  */
-extern const char *const lime_settings_kernel_path;
+extern const char *lime_settings_kernel_path;
 
 /**
  * The level of verbosity as defined by the CLI.
  */
-extern const u64 const lime_settings_verbosity;
+extern u64 lime_settings_verbosity;
 
 /**
  * A preallocated sentinel value which can be used for any purpose where it is
