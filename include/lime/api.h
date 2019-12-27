@@ -151,6 +151,11 @@ if (((value) == NULL && (type) != LimeListValue) || ((value) != NULL && (value)-
 #define LIME_STACK_PUSH_VALUE(stack, value) LIME_STACK_PUSH_VALUE_USE_FRESH_TEMPORARY(stack, CONCAT(_result, __LINE__), value)
 
 /**
+ * The path to the boot image as defined by the CLI.
+ */
+extern const char *lime_settings_boot_path;
+
+/**
  * The path to the kernel library as defined by the CLI.
  */
 extern const char *lime_settings_kernel_path;
