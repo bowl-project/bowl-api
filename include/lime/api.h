@@ -424,6 +424,14 @@ extern LimeResult lime_function(LimeStack stack, LimeValue library, LimeFunction
 extern LimeResult lime_list(LimeStack stack, LimeValue head, LimeValue tail);
 
 /**
+ * Reverses the provided list.
+ * @param stack The current stack of the environment.
+ * @param list The list which should be reversed.
+ * @return Either an exception or the reversed list.
+ */
+extern LimeResult lime_list_reverse(LimeStack stack, LimeValue list);
+
+/**
  * The constructor for map values. 
  * @param stack The current stack of the environment.
  * @param capacity The number of buckets this map should have.
