@@ -466,10 +466,11 @@ extern LimeResult lime_boolean(LimeStack stack, bool value);
 /**
  * The constructor for vector values.
  * @param stack The current stack of the environment.
+ * @param value The value which should be used to fill the vector.
  * @param length The length of the vector.
  * @return Either an exception (e.g. in case of a heap overflow) or the vector value.
  */
-extern LimeResult lime_vector(LimeStack stack, u64 const length);
+extern LimeResult lime_vector(LimeStack stack, LimeValue value, u64 const length);
 
 /**
  * The constructor for exception values.
