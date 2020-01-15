@@ -8,21 +8,25 @@
  */
 typedef enum {
     /** Indicates a value of type 'symbol'. */
-    LimeSymbolValue  = 0,
+    LimeSymbolValue    = 0,
     /** Indicates a value of type 'list'. */
-    LimeListValue    = 1,
+    LimeListValue      = 1,
     /** Indicates a value of type 'function'. */
-    LimeNativeValue  = 2,
+    LimeNativeValue    = 2,
     /** Indicates a value of type 'map'. */
-    LimeMapValue     = 3,
+    LimeMapValue       = 3,
     /** Indicates a value of type 'boolean'. */
-    LimeBooleanValue = 4,
+    LimeBooleanValue   = 4,
     /** Indicates a value of type 'number'. */
-    LimeNumberValue  = 5,
+    LimeNumberValue    = 5,
     /** Indicates a value of type 'string'. */
-    LimeStringValue  = 6,
+    LimeStringValue    = 6,
     /** Indicates a value of type 'library'. */
-    LimeLibraryValue = 7
+    LimeLibraryValue   = 7,
+    /** Indicates a value of type 'vector'. */
+    LimeVectorValue    = 8,
+    /** Indicates a value of type 'exception'. */
+    LimeExceptionValue = 9
 } LimeValueType;
 
 /**  
@@ -304,6 +308,20 @@ struct lime_value {
              */
             u8  bytes[];
         } library;
+
+        struct {
+            /** The length of this vector. */
+            u64 length;
+            /** This vector's array of elements. */
+            LimeValue elements[];
+        } vector;
+
+        struct {
+            /** The exception which originally caused this one or 'NULL'. */
+            LimeValue cause;
+            /** The message of this exception. */
+            LimeValue message;
+        } exception;
     };
 };
 

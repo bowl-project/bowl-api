@@ -27,7 +27,7 @@ typedef struct {
  */
 #define LIME_STACK_POP_VALUE(stack, variable) \
 if (*(stack)->datastack == NULL) {\
-    return lime_exception((stack), "stack underflow in function '%s'", __FUNCTION__);\
+    return lime_format_exception((stack), "stack underflow in function '%s'", __FUNCTION__).value;\
 }\
 *(variable) = (*(stack)->datastack)->list.head;\
 *(stack)->datastack = (*(stack)->datastack)->list.tail;
@@ -95,7 +95,7 @@ if ((temporary)->failure) {\
  */
 #define LIME_ASSERT_TYPE(value, type) \
 if (((value) == NULL && (type) != LimeListValue) || ((value) != NULL && (value)->_LIME_VALUE_TYPE_FIELD_NAME != (type))) {\
-    return lime_exception((stack), "argument of illegal type '%s' in function '%s' (expected type '%s')", lime_value_type(value), __FUNCTION__, lime_type_name(type));\
+    return lime_format_exception((stack), "argument of illegal type '%s' in function '%s' (expected type '%s')", lime_value_type(value), __FUNCTION__, lime_type_name(type))._LIME_RESULT_VALUE_FIELD_NAME;\
 }
 
 /**
@@ -377,14 +377,14 @@ extern char *lime_value_type(LimeValue value);
 extern char *lime_type_name(LimeValueType type);
 
 /**
- * Creates a new string exception on basis of the message and its format data.
+ * Creates a new exception on basis of the message and its format data.
  * @param stack The current stack of the environment.
  * @param message The message which may contain format specifiers.
  * @param ... The variable number of format data.
- * @return Either the string exception or any other exception which arose while
+ * @return Either the exception or any other exception which arose while
  * creating it (e.g. in case of a heap overflow).
  */
-extern LimeValue lime_exception(LimeStack stack, char *message, ...);
+extern LimeResult lime_format_exception(LimeStack stack, char *message, ...);
 
 /**
  * The constructor for symbol values. 
@@ -462,5 +462,22 @@ extern LimeResult lime_library(LimeStack stack, char *path);
  * @return Either an exception (e.g. in case of a heap overflow) or the boolean value.
  */
 extern LimeResult lime_boolean(LimeStack stack, bool value);
+
+/**
+ * The constructor for vector values.
+ * @param stack The current stack of the environment.
+ * @param length The length of the vector.
+ * @return Either an exception (e.g. in case of a heap overflow) or the vector value.
+ */
+extern LimeResult lime_vector(LimeStack stack, u64 const length);
+
+/**
+ * The constructor for exception values.
+ * @param stack The current stack of the environment.
+ * @param cause The exception that originally caused this one or 'NULL'.
+ * @param message The value that represents this exception's message.
+ * @return Either an exception (e.g. in case of a heap overflow) or the exception value.
+ */
+extern LimeResult lime_exception(LimeStack stack, LimeValue cause, LimeValue message);
 
 #endif
