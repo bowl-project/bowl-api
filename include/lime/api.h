@@ -106,14 +106,14 @@ if (((value) == NULL && (type) != LimeListValue) || ((value) != NULL && (value)-
 #define LIME_STATIC_STRING_CONSTANT(name, string) \
 static union {\
     struct {\
-        LimeValueType const type;\
-        LimeValue const location;\
+        LimeValueType type;\
+        LimeValue location;\
         u64 hash;\
-        u64 const length;\
-        const u8 const bytes[sizeof(string)];\
+        u64 length;\
+        u8 bytes[sizeof(string)];\
     };\
     struct lime_value value;\
-} const name = {\
+} name = {\
     .type = LimeStringValue,\
     .location = NULL,\
     .hash = 0,\
