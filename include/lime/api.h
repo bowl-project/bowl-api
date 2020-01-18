@@ -99,19 +99,27 @@ if (((value) == NULL && (type) != LimeListValue) || ((value) != NULL && (value)-
 }
 
 /**
- * Returns a designated initializer for a static string constant. 
- * @param string The string literal.
- * @return A designated initializer for the type 'LimeValue'.
+ * Defines a new static lime string constant on basis of the provided C string literal.
+ * @param string The C string literal.
+ * @return A static definition which is named as given.
  */
-#define LIME_STRING_STATIC_CONSTANT(string) {\
+#define LIME_STATIC_STRING_CONSTANT(name, string) \
+static union {\
+    struct {\
+        LimeValueType const type;\
+        LimeValue const location;\
+        u64 hash;\
+        u64 const length;\
+        const u8 const bytes[sizeof(string)];\
+    };\
+    struct lime_value value;\
+} const name = {\
     .type = LimeStringValue,\
     .location = NULL,\
     .hash = 0,\
-    .symbol = {\
-        .length = sizeof(string) - 1,\
-        .bytes = string\
-    }\
-}
+    .length = sizeof(string) - 1,\
+    .bytes = string\
+};
 
 /**
  * Assigns the provided 'value' to the given 'temporary' variable and checks 
