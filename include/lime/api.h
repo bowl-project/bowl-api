@@ -99,11 +99,11 @@ if (((value) == NULL && (type) != LimeListValue) || ((value) != NULL && (value)-
 }
 
 /**
- * Defines a new static lime string constant on basis of the provided C string literal.
+ * Defines a new static lime string on basis of the provided C string literal.
  * @param string The C string literal.
  * @return A static definition which is named as given.
  */
-#define LIME_STATIC_STRING_CONSTANT(name, string) \
+#define LIME_STATIC_STRING(name, string) \
 static union {\
     struct {\
         LimeValueType type;\
@@ -119,6 +119,29 @@ static union {\
     .hash = 0,\
     .length = sizeof(string) - 1,\
     .bytes = string\
+};
+
+/**
+ * Defines a new static lime symbol on basis of the provided C string literal.
+ * @param symbol The C string literal.
+ * @return A static definition which is named as given.
+ */
+#define LIME_STATIC_SYMBOL(name, symbol) \
+static union {\
+    struct {\
+        LimeValueType type;\
+        LimeValue location;\
+        u64 hash;\
+        u64 length;\
+        u8 bytes[sizeof(symbol)];\
+    };\
+    struct lime_value value;\
+} name = {\
+    .type = LimeSymbolValue,\
+    .location = NULL,\
+    .hash = 0,\
+    .length = sizeof(symbol) - 1,\
+    .bytes = symbol\
 };
 
 /**
