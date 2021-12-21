@@ -1,44 +1,44 @@
-#ifndef LIME_H
-#define LIME_H
+#ifndef BOWL_H
+#define BOWL_H
 
 #include "common.h"
 
 /**
- * An enumeration of all value types that exist in lime.
+ * An enumeration of all value types that exist in bowl.
  */
 typedef enum {
     /** Indicates a value of type 'symbol'. */
-    LimeSymbolValue    = 0,
+    BowlSymbolValue    = 0,
     /** Indicates a value of type 'list'. */
-    LimeListValue      = 1,
+    BowlListValue      = 1,
     /** Indicates a value of type 'function'. */
-    LimeNativeValue    = 2,
+    BowlNativeValue    = 2,
     /** Indicates a value of type 'map'. */
-    LimeMapValue       = 3,
+    BowlMapValue       = 3,
     /** Indicates a value of type 'boolean'. */
-    LimeBooleanValue   = 4,
+    BowlBooleanValue   = 4,
     /** Indicates a value of type 'number'. */
-    LimeNumberValue    = 5,
+    BowlNumberValue    = 5,
     /** Indicates a value of type 'string'. */
-    LimeStringValue    = 6,
+    BowlStringValue    = 6,
     /** Indicates a value of type 'library'. */
-    LimeLibraryValue   = 7,
+    BowlLibraryValue   = 7,
     /** Indicates a value of type 'vector'. */
-    LimeVectorValue    = 8,
+    BowlVectorValue    = 8,
     /** Indicates a value of type 'exception'. */
-    LimeExceptionValue = 9
-} LimeValueType;
+    BowlExceptionValue = 9
+} BowlValueType;
 
 /**  
- * The type for all lime values.
+ * The type for all bowl values.
  * 
- * Since lime values reside in the heap, this type is a pointer to the actual 
+ * Since bowl values reside in the heap, this type is a pointer to the actual 
  * data structure.
  */
-typedef struct lime_value *LimeValue;
+typedef struct bowl_value *BowlValue;
 
 /**
- * The type of a single stack frame of lime.
+ * The type of a single stack frame of bowl.
  * 
  * A stack frame is used to store temporary values and global registers such as 
  * the callstack, datastack and the dictionary. 
@@ -62,29 +62,29 @@ typedef struct lime_value *LimeValue;
  * desired when working with the datastack (e.g. retrieving arguments from the 
  * datastack and pushing result values onto it).
  */
-typedef struct lime_stack_frame LimeStackFrame;
+typedef struct bowl_stack_frame BowlStackFrame;
 
 /**
  * The actual data structure of a single stack frame.
- * @see LimeStackFrame
+ * @see BowlStackFrame
  */
-struct lime_stack_frame {
+struct bowl_stack_frame {
     /**
      * A pointer to the previous stack frame or 'NULL' if there is no previous
      * stack frame.
      */
-    LimeStackFrame *previous;
+    BowlStackFrame *previous;
     /**
      * A set of general purpose registers which are managed by the garbage
      * collector.
      */
-    LimeValue registers[3];
+    BowlValue registers[3];
     /** The dictionary of the current scope. */
-    LimeValue *dictionary;
+    BowlValue *dictionary;
     /** The callstack of the current scope. */
-    LimeValue *callstack;
+    BowlValue *callstack;
     /** The datastack of the current scope. */
-    LimeValue *datastack;
+    BowlValue *datastack;
 };
 
 /**
@@ -93,9 +93,9 @@ struct lime_stack_frame {
  * Since stack frames hold a reference to their previous stack frame, a pointer
  * to a stack frame basically forms a single linked list and thus can be seen 
  * as a stack.
- * @see LimeStackFrame
+ * @see BowlStackFrame
  */
-typedef LimeStackFrame *LimeStack;
+typedef BowlStackFrame *BowlStack;
 
 /**
  * A convenient macro which handles the stack allocation of new stack frames. 
@@ -104,9 +104,9 @@ typedef LimeStackFrame *LimeStack;
  * @param a The initial value of the first register or 'NULL' otherwise.
  * @param b The initial value of the second register or 'NULL' otherwise.
  * @param c The initial value of the third register or 'NULL' otherwise.
- * @return A designated initializer for the type 'LimeStackFrame'.
+ * @return A designated initializer for the type 'BowlStackFrame'.
  */
-#define LIME_ALLOCATE_STACK_FRAME(stack, a, b, c) {\
+#define BOWL_ALLOCATE_STACK_FRAME(stack, a, b, c) {\
     .previous = (stack),\
     .registers = { (a), (b), (c) },\
     .dictionary = (stack)->dictionary,\
@@ -117,9 +117,9 @@ typedef LimeStackFrame *LimeStack;
 /** 
  * A macro for empty stack frames. 
  * @param stack A pointer to the previous stack frame or 'NULL' if there is none.
- * @return A designated initializer for the type 'LimeStackFrame'.
+ * @return A designated initializer for the type 'BowlStackFrame'.
  */
-#define LIME_EMPTY_STACK_FRAME(stack) {\
+#define BOWL_EMPTY_STACK_FRAME(stack) {\
     .previous = (stack),\
     .registers = { NULL, NULL, NULL },\
     .dictionary = NULL,\
@@ -128,15 +128,15 @@ typedef LimeStackFrame *LimeStack;
 }
 
 /**
- * The interface of a native function for lime.
+ * The interface of a native function for bowl.
  * 
  * A native function always takes the current stack as argument and returns 
  * an exception or 'NULL' if there was no exception. 
  * 
- * Arguments and result values of lime itself must be passed by setting the
+ * Arguments and result values of bowl itself must be passed by setting the
  * datastack accordingly.
  */
-typedef LimeValue (*LimeFunction)(LimeStack stack);
+typedef BowlValue (*BowlFunction)(BowlStack stack);
 
 /**
  * The type of a native library handle. 
@@ -144,30 +144,30 @@ typedef LimeValue (*LimeFunction)(LimeStack stack);
  * On unsupported platforms this type defaults to the generic 'void*' type.
  */
 #if defined(OS_UNIX)
-    typedef void *LimeLibraryHandle;
+    typedef void *BowlLibraryHandle;
 #elif defined(OS_WINDOWS)
-    typedef HINSTANCE LimeLibraryHandle;
+    typedef HINSTANCE BowlLibraryHandle;
 #else
-    typedef void *LimeLibraryHandle;
+    typedef void *BowlLibraryHandle;
 #endif
 
 /**
- * The actual data structure of a lime value.
- * @see LimeValue
+ * The actual data structure of a bowl value.
+ * @see BowlValue
  */
-struct lime_value {
+struct bowl_value {
     /** 
      * The type of this value.
-     * @see LimeValueType
+     * @see BowlValueType
      */
-    LimeValueType type;
+    BowlValueType type;
     /** 
      * The real location of this value.
      * 
      * This field is used by the garbage collector to mark the new location 
      * of a value after it has been relocated by it.
      */
-    LimeValue location;
+    BowlValue location;
     /** 
      * The hash of this value.
      * 
@@ -245,14 +245,14 @@ struct lime_value {
             /** The length of this list. */
             u64 length;
             /** The head of this list. */
-            LimeValue head;
+            BowlValue head;
             /** 
              * The tail of this list.
              * 
              * This field may contain 'NULL' in case of the empty list, which
              * is always represented as the 'NULL' pointer.
              */
-            LimeValue tail;
+            BowlValue tail;
         } list;
 
         /**
@@ -273,7 +273,7 @@ struct lime_value {
              * with an even index) correspond to keys and all even elements (those
              * with an odd index) correspond to values.
              */
-            LimeValue buckets[];
+            BowlValue buckets[];
         } map;
 
         /**
@@ -284,9 +284,9 @@ struct lime_value {
          */
         struct {
             /** The library value which contains this function or 'NULL' if there is none */
-            LimeValue library;
+            BowlValue library;
             /** The function pointer to the native function. */
-            LimeFunction function;
+            BowlFunction function;
         } function;
 
         /**
@@ -297,7 +297,7 @@ struct lime_value {
          */
         struct {
             /** The handle of the dynamic library. */
-            LimeLibraryHandle handle;
+            BowlLibraryHandle handle;
             /** The length of this library's name. */
             u64 length;
             /** 
@@ -313,14 +313,14 @@ struct lime_value {
             /** The length of this vector. */
             u64 length;
             /** This vector's array of elements. */
-            LimeValue elements[];
+            BowlValue elements[];
         } vector;
 
         struct {
             /** The exception which originally caused this one or 'NULL'. */
-            LimeValue cause;
+            BowlValue cause;
             /** The message of this exception. */
-            LimeValue message;
+            BowlValue message;
         } exception;
     };
 };

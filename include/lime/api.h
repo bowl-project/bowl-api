@@ -1,7 +1,7 @@
 #ifndef API_H
 #define API_H
 
-#include "lime.h"
+#include "bowl.h"
 #include "module.h"
 
 /**
@@ -13,11 +13,11 @@ typedef struct {
     bool failure;
     union {
         /** The value of this result if it is a success. */
-        LimeValue value;
+        BowlValue value;
         /** The value of this result if it is a failure. */
-        LimeValue exception;
+        BowlValue exception;
     };
-} LimeResult;
+} BowlResult;
 
 /**
  * Pops a value from the datastack or returns an exception value if the datastack is
@@ -25,9 +25,9 @@ typedef struct {
  * @param stack The current stack of the environment.
  * @param variable A pointer to a memory location where the popped value should be stored.
  */
-#define LIME_STACK_POP_VALUE(stack, variable) \
+#define BOWL_STACK_POP_VALUE(stack, variable) \
 if (*(stack)->datastack == NULL) {\
-    return lime_format_exception((stack), "stack underflow in function '%s'", __FUNCTION__).value;\
+    return bowl_format_exception((stack), "stack underflow in function '%s'", __FUNCTION__).value;\
 }\
 *(variable) = (*(stack)->datastack)->list.head;\
 *(stack)->datastack = (*(stack)->datastack)->list.tail;
@@ -39,14 +39,14 @@ if (*(stack)->datastack == NULL) {\
  * the exception is returned).
  * @param variable A memory location where the resulting value should be stored.
  * @param temporary A memory location where the value should be temporarily stored.
- * @param A value of type 'LimeResult'. 
+ * @param A value of type 'BowlResult'. 
  */
-#define LIME_TRY_USE_TEMPORARY(variable, temporary, value) \
+#define BOWL_TRY_USE_TEMPORARY(variable, temporary, value) \
 *(temporary) = (value);\
 if ((temporary)->failure) {\
     return (temporary)->exception;\
 } else {\
-    *(variable) = (temporary)->_LIME_RESULT_VALUE_FIELD_NAME;\
+    *(variable) = (temporary)->_BOWL_RESULT_VALUE_FIELD_NAME;\
 }
 
 /**
@@ -56,11 +56,11 @@ if ((temporary)->failure) {\
  * case the exception is returned).
  * @param variable A memory location where the resulting value should be stored.
  * @param temporary A name for the temporary variable.
- * @param A value of type 'LimeResult'. 
+ * @param A value of type 'BowlResult'. 
  */
-#define LIME_TRY_USE_FRESH_TEMPORARY(variable, temporary, value) {\
-    LimeResult temporary;\
-    LIME_TRY_USE_TEMPORARY(variable, &temporary, value);\
+#define BOWL_TRY_USE_FRESH_TEMPORARY(variable, temporary, value) {\
+    BowlResult temporary;\
+    BOWL_TRY_USE_TEMPORARY(variable, &temporary, value);\
 }
 
 /**
@@ -71,21 +71,21 @@ if ((temporary)->failure) {\
  * line number) is used for this purpose. That is, neither the provided variable
  * nor the value should contain an identifier that is equally named.
  * @param variable A memory location where the resulting value should be stored.
- * @param A value of type 'LimeResult'. 
+ * @param A value of type 'BowlResult'. 
  */
-#define LIME_TRY(variable, value) LIME_TRY_USE_FRESH_TEMPORARY(variable, CONCAT(_result, __LINE__), value)
+#define BOWL_TRY(variable, value) BOWL_TRY_USE_FRESH_TEMPORARY(variable, CONCAT(_result, __LINE__), value)
 
 /**
- * The name of the 'value' field for the 'LimeResult' type.
+ * The name of the 'value' field for the 'BowlResult' type.
  * @internal
  */
-#define _LIME_RESULT_VALUE_FIELD_NAME value
+#define _BOWL_RESULT_VALUE_FIELD_NAME value
 
 /**
- * The name of the 'type' field for the 'LimeValue' type.
+ * The name of the 'type' field for the 'BowlValue' type.
  * @internal
  */
-#define _LIME_VALUE_TYPE_FIELD_NAME type
+#define _BOWL_VALUE_TYPE_FIELD_NAME type
 
 /**
  * Asserts that the given value has the provided type and throws an exception
@@ -93,28 +93,28 @@ if ((temporary)->failure) {\
  * @param value The value whose type should be checked.
  * @param type The expected type.
  */
-#define LIME_ASSERT_TYPE(value, type) \
-if (((value) == NULL && (type) != LimeListValue) || ((value) != NULL && (value)->_LIME_VALUE_TYPE_FIELD_NAME != (type))) {\
-    return lime_format_exception((stack), "argument of illegal type '%s' in function '%s' (expected type '%s')", lime_value_type(value), __FUNCTION__, lime_type_name(type))._LIME_RESULT_VALUE_FIELD_NAME;\
+#define BOWL_ASSERT_TYPE(value, type) \
+if (((value) == NULL && (type) != BowlListValue) || ((value) != NULL && (value)->_BOWL_VALUE_TYPE_FIELD_NAME != (type))) {\
+    return bowl_format_exception((stack), "argument of illegal type '%s' in function '%s' (expected type '%s')", bowl_value_type(value), __FUNCTION__, bowl_type_name(type))._BOWL_RESULT_VALUE_FIELD_NAME;\
 }
 
 /**
- * Defines a new static lime string on basis of the provided C string literal.
+ * Defines a new static bowl string on basis of the provided C string literal.
  * @param string The C string literal.
  * @return A static definition which is named as given.
  */
-#define LIME_STATIC_STRING(name, string) \
+#define BOWL_STATIC_STRING(name, string) \
 static union {\
     struct {\
-        LimeValueType type;\
-        LimeValue location;\
+        BowlValueType type;\
+        BowlValue location;\
         u64 hash;\
         u64 length;\
         u8 bytes[sizeof(string)];\
     };\
-    struct lime_value value;\
+    struct bowl_value value;\
 } name = {\
-    .type = LimeStringValue,\
+    .type = BowlStringValue,\
     .location = NULL,\
     .hash = 0,\
     .length = sizeof(string) - 1,\
@@ -122,22 +122,22 @@ static union {\
 };
 
 /**
- * Defines a new static lime symbol on basis of the provided C string literal.
+ * Defines a new static bowl symbol on basis of the provided C string literal.
  * @param symbol The C string literal.
  * @return A static definition which is named as given.
  */
-#define LIME_STATIC_SYMBOL(name, symbol) \
+#define BOWL_STATIC_SYMBOL(name, symbol) \
 static union {\
     struct {\
-        LimeValueType type;\
-        LimeValue location;\
+        BowlValueType type;\
+        BowlValue location;\
         u64 hash;\
         u64 length;\
         u8 bytes[sizeof(symbol)];\
     };\
-    struct lime_value value;\
+    struct bowl_value value;\
 } name = {\
-    .type = LimeSymbolValue,\
+    .type = BowlSymbolValue,\
     .location = NULL,\
     .hash = 0,\
     .length = sizeof(symbol) - 1,\
@@ -151,9 +151,9 @@ static union {\
  * the exception is returned).
  * @param stack The stack of the current environment.
  * @param temporary A memory location where the value should be temporarily stored.
- * @param A value of type 'LimeResult'.
+ * @param A value of type 'BowlResult'.
  */
-#define LIME_STACK_PUSH_VALUE_USE_TEMPORARY(stack, temporary, value) LIME_TRY_USE_TEMPORARY((stack)->datastack, (temporary), lime_list((stack), (value), *((stack)->datastack)))
+#define BOWL_STACK_PUSH_VALUE_USE_TEMPORARY(stack, temporary, value) BOWL_TRY_USE_TEMPORARY((stack)->datastack, (temporary), bowl_list((stack), (value), *((stack)->datastack)))
 
 /**
  * Creates a new temporary variable, assigns the provided 'value' to it and 
@@ -162,11 +162,11 @@ static union {\
  * case the exception is returned).
  * @param stack The stack of the current environment.
  * @param temporary A name for the temporary variable.
- * @param A value of type 'LimeResult'.
+ * @param A value of type 'BowlResult'.
  */
-#define LIME_STACK_PUSH_VALUE_USE_FRESH_TEMPORARY(stack, temporary, value) {\
-    LimeResult temporary;\
-    LIME_STACK_PUSH_VALUE_USE_TEMPORARY(stack, &temporary, value);\
+#define BOWL_STACK_PUSH_VALUE_USE_FRESH_TEMPORARY(stack, temporary, value) {\
+    BowlResult temporary;\
+    BOWL_STACK_PUSH_VALUE_USE_TEMPORARY(stack, &temporary, value);\
 }
 
 /**
@@ -177,46 +177,46 @@ static union {\
  * line number) is used for this purpose. That is, neither the provided stack
  * nor the value should contain an identifier that is equally named.
  * @param stack The stack of the current environment.
- * @param A value of type 'LimeResult'.
+ * @param A value of type 'BowlResult'.
  */
-#define LIME_STACK_PUSH_VALUE(stack, value) LIME_STACK_PUSH_VALUE_USE_FRESH_TEMPORARY(stack, CONCAT(_result, __LINE__), value)
+#define BOWL_STACK_PUSH_VALUE(stack, value) BOWL_STACK_PUSH_VALUE_USE_FRESH_TEMPORARY(stack, CONCAT(_result, __LINE__), value)
 
 /**
  * The path to the boot image as defined by the CLI.
  */
-extern const char *lime_settings_boot_path;
+extern const char *bowl_settings_boot_path;
 
 /**
  * The path to the kernel library as defined by the CLI.
  */
-extern const char *lime_settings_kernel_path;
+extern const char *bowl_settings_kernel_path;
 
 /**
  * The level of verbosity as defined by the CLI.
  */
-extern u64 lime_settings_verbosity;
+extern u64 bowl_settings_verbosity;
 
 /**
  * A preallocated sentinel value which can be used for any purpose where it is
  * required to pass dummy data that is not used in any meaningful way.
  * 
  * A common example of this value's application is its use as the default argument
- * for the 'lime_map_get_or_else' function to check if the provided key was present
+ * for the 'bowl_map_get_or_else' function to check if the provided key was present
  * in the map.
  */
-extern const LimeValue lime_sentinel_value;
+extern const BowlValue bowl_sentinel_value;
 
 /**
  * A preallocated string exception which is used whenever the finalization of
  * a native library failed.
  */
-extern const LimeValue lime_exception_finalization_failure;
+extern const BowlValue bowl_exception_finalization_failure;
 
 /**
  * A preallocated string exception which is used whenever there is not enough 
  * heap memory available.
  */
-extern const LimeValue lime_exception_out_of_heap;
+extern const BowlValue bowl_exception_out_of_heap;
 
 /**
  * Enters the provided function in the dictionary of the current environment.
@@ -227,7 +227,7 @@ extern const LimeValue lime_exception_out_of_heap;
  * @param function The function which should be entered.
  * @return Either an exception or 'NULL' if no exception occurred.
  */
-extern LimeValue lime_register_function(LimeStack stack, char *name, LimeValue library, LimeFunction function);
+extern BowlValue bowl_register_function(BowlStack stack, char *name, BowlValue library, BowlFunction function);
 
 /**
  * Prints the given value after the provided message.
@@ -235,14 +235,14 @@ extern LimeValue lime_register_function(LimeStack stack, char *name, LimeValue l
  * @param message The message to print.
  * @param ... The data which is used to format the message.
  */
-extern void lime_value_debug(LimeValue value, char *message, ...);
+extern void bowl_value_debug(BowlValue value, char *message, ...);
 
 /**
  * Triggers a run of the garbage collector. 
  * @param stack The current stack of the environment.
  * @return Either an exception or 'NULL' if no exception occurred.
  */
-extern LimeValue lime_collect_garbage(LimeStack stack);
+extern BowlValue bowl_collect_garbage(BowlStack stack);
 
 /**
  * Tokenizes the provided string by separating values at white space characters.
@@ -250,7 +250,7 @@ extern LimeValue lime_collect_garbage(LimeStack stack);
  * @param string The string which should be tokenized.
  * @return Either a list of all tokens or an exception.
  */
-extern LimeResult lime_tokens(LimeStack stack, LimeValue string);
+extern BowlResult bowl_tokens(BowlStack stack, BowlValue string);
 
 /**
  * Allocates memory for the provided value type including any additional bytes.
@@ -262,7 +262,7 @@ extern LimeResult lime_tokens(LimeStack stack, LimeValue string);
  * @param additional The number of additional bytes which should be allocated.
  * @return Either the allocated value or the exception.
  */
-extern LimeResult lime_allocate(LimeStack stack, LimeValueType type, u64 additional);
+extern BowlResult bowl_allocate(BowlStack stack, BowlValueType type, u64 additional);
 
 /**
  * Creates an exact copy of the provided value.
@@ -270,7 +270,7 @@ extern LimeResult lime_allocate(LimeStack stack, LimeValueType type, u64 additio
  * @param value The value which should be cloned.
  * @return Either the copy of the provided value or the exception.
  */
-extern LimeResult lime_value_clone(LimeStack stack, LimeValue value);
+extern BowlResult bowl_value_clone(BowlStack stack, BowlValue value);
 
 /**
  * Deletes the specified key from the provided map.
@@ -279,7 +279,7 @@ extern LimeResult lime_value_clone(LimeStack stack, LimeValue value);
  * @param key The key to delete.
  * @return Either the map where the provided key is not present anymore or an exception.
  */
-LimeResult lime_map_delete(LimeStack stack, LimeValue map, LimeValue key);
+BowlResult bowl_map_delete(BowlStack stack, BowlValue map, BowlValue key);
 
 /**
  * Merges the two provided maps into a new one.
@@ -288,18 +288,18 @@ LimeResult lime_map_delete(LimeStack stack, LimeValue map, LimeValue key);
  * @param b The second map.
  * @return Either a map which contains all the keys of the two provided ones or an exception.
  */
-LimeResult lime_map_merge(LimeStack stack, LimeValue a, LimeValue b);
+BowlResult bowl_map_merge(BowlStack stack, BowlValue a, BowlValue b);
 
 /** 
  * Retrieves the value from the provided map which is associated with the specified
  * key or returns a default value if there is no value associated with the key.
  * @param map A value of type 'map'.
  * @param key An arbitrary value which represents the key.
- * @param otherwise An arbitrary default value. The 'lime_sentinel_value' may be used
+ * @param otherwise An arbitrary default value. The 'bowl_sentinel_value' may be used
  * to check if there is a value associated with the provided key.
  * @return Either the associated value or the default value.
  */
-extern LimeValue lime_map_get_or_else(LimeValue map, LimeValue key, LimeValue otherwise);
+extern BowlValue bowl_map_get_or_else(BowlValue map, BowlValue key, BowlValue otherwise);
 
 /**
  * Tests whether the second argument is a subset of the first one.
@@ -307,7 +307,7 @@ extern LimeValue lime_map_get_or_else(LimeValue map, LimeValue key, LimeValue ot
  * @param subset A value of type 'map'.
  * @return Whether or not the second argument is a subset of the first one.
  */
-extern bool lime_map_subset_of(LimeValue superset, LimeValue subset);
+extern bool bowl_map_subset_of(BowlValue superset, BowlValue subset);
 
 /**
  * Inserts the value at the specified key in the provided map. 
@@ -320,7 +320,7 @@ extern bool lime_map_subset_of(LimeValue superset, LimeValue subset);
  * @return A copy of the provided map where the specified key is associated 
  * with the value.
  */
-extern LimeResult lime_map_put(LimeStack stack, LimeValue map, LimeValue key, LimeValue value);
+extern BowlResult bowl_map_put(BowlStack stack, BowlValue map, BowlValue key, BowlValue value);
 
 /**
  * Generates a null-terminated string of the provided value by allocating
@@ -330,21 +330,21 @@ extern LimeResult lime_map_put(LimeStack stack, LimeValue map, LimeValue key, Li
  * @return A null-terminated string whose logical value is equal to that of the
  * provided value.
  */
-extern char *lime_string_to_null_terminated(LimeValue value);
+extern char *bowl_string_to_null_terminated(BowlValue value);
 
 /**
  * Checks if the specified library is currently loaded.
  * @param path The file path to the library.
  * @return Whether or not the specified library is currently loaded.
  */
-extern bool lime_library_is_loaded(char *path);
+extern bool bowl_library_is_loaded(char *path);
 
 /**
  * Computes the hash of the provided value.
  * @param value The value to hash.
  * @return The hash of the provided value.
  */
-extern u64 lime_value_hash(LimeValue value);
+extern u64 bowl_value_hash(BowlValue value);
 
 /**
  * Tests whether the two provided values are equal.
@@ -352,16 +352,16 @@ extern u64 lime_value_hash(LimeValue value);
  * @param b The second value.
  * @return Whether or not the two values are equal.
  */
-extern bool lime_value_equals(LimeValue a, LimeValue b);
+extern bool bowl_value_equals(BowlValue a, BowlValue b);
 
 /**
  * Computes the actual byte size of the provided value.
  * This takes any variable sized members into account and is therefore at 
- * least 'sizeof(struct lime_value)'.
+ * least 'sizeof(struct bowl_value)'.
  * @param value The value whose byte size should be computed.
  * @return The hash of the value. 
  */
-extern u64 lime_value_byte_size(LimeValue value);
+extern u64 bowl_value_byte_size(BowlValue value);
 
 /**
  * Prints the string representation of the provided value into the specified
@@ -369,7 +369,7 @@ extern u64 lime_value_byte_size(LimeValue value);
  * @param stream The output stream to use.
  * @param value The value to print.
  */
-extern void lime_value_dump(FILE *stream, LimeValue value);
+extern void bowl_value_dump(FILE *stream, BowlValue value);
 
 /**
  * Computes a string representation of the provided value by dynamically 
@@ -382,7 +382,7 @@ extern void lime_value_dump(FILE *stream, LimeValue value);
  * @param length A reference to a memory location where the resulting size
  * will be stored.
  */
-extern void lime_value_show(LimeValue value, char **buffer, u64 *length);
+extern void bowl_value_show(BowlValue value, char **buffer, u64 *length);
 
 /** 
  * Returns the length of the provided value. 
@@ -391,21 +391,21 @@ extern void lime_value_show(LimeValue value, char **buffer, u64 *length);
  * @param value The value whose length should be returned.
  * @return The length of the value.
  */
-extern u64 lime_value_length(LimeValue value);
+extern u64 bowl_value_length(BowlValue value);
 
 /**
  * Returns a string representation of the value's type.
  * @param value The value whose type's string representation should be returned.
  * @return The string representation of the value's type.
  */
-extern char *lime_value_type(LimeValue value);
+extern char *bowl_value_type(BowlValue value);
 
 /**
  * Returns a string representation of the provided type.
  * @param type The type whose string representation should be returned.
  * @return The string representation of the type.
  */
-extern char *lime_type_name(LimeValueType type);
+extern char *bowl_type_name(BowlValueType type);
 
 /**
  * Creates a new exception on basis of the message and its format data.
@@ -415,7 +415,7 @@ extern char *lime_type_name(LimeValueType type);
  * @return Either the exception or any other exception which arose while
  * creating it (e.g. in case of a heap overflow).
  */
-extern LimeResult lime_format_exception(LimeStack stack, char *message, ...);
+extern BowlResult bowl_format_exception(BowlStack stack, char *message, ...);
 
 /**
  * The constructor for symbol values. 
@@ -424,7 +424,7 @@ extern LimeResult lime_format_exception(LimeStack stack, char *message, ...);
  * @param length The length of the byte data.
  * @return Either an exception (e.g. in case of a heap overflow) or the symbol.
  */
-extern LimeResult lime_symbol(LimeStack stack, u8 *bytes, u64 length);
+extern BowlResult bowl_symbol(BowlStack stack, u8 *bytes, u64 length);
 
 /**
  * The constructor for string values. 
@@ -433,7 +433,7 @@ extern LimeResult lime_symbol(LimeStack stack, u8 *bytes, u64 length);
  * @param length The length of the byte data.
  * @return Either an exception (e.g. in case of a heap overflow) or the string.
  */
-extern LimeResult lime_string(LimeStack stack, u8 *bytes, u64 length);
+extern BowlResult bowl_string(BowlStack stack, u8 *bytes, u64 length);
 
 /**
  * The constructor for native function values. 
@@ -443,7 +443,7 @@ extern LimeResult lime_string(LimeStack stack, u8 *bytes, u64 length);
  * @param function The function pointer. 
  * @return Either an exception (e.g. in case of a heap overflow) or the function value.
  */
-extern LimeResult lime_function(LimeStack stack, LimeValue library, LimeFunction function);
+extern BowlResult bowl_function(BowlStack stack, BowlValue library, BowlFunction function);
 
 /**
  * The constructor for list values. 
@@ -452,7 +452,7 @@ extern LimeResult lime_function(LimeStack stack, LimeValue library, LimeFunction
  * @param tail The tail of the list, which may be 'NULL' in case of an empty list.
  * @return Either an exception (e.g. in case of a heap overflow) or the list value.
  */
-extern LimeResult lime_list(LimeStack stack, LimeValue head, LimeValue tail);
+extern BowlResult bowl_list(BowlStack stack, BowlValue head, BowlValue tail);
 
 /**
  * Reverses the provided list.
@@ -460,7 +460,7 @@ extern LimeResult lime_list(LimeStack stack, LimeValue head, LimeValue tail);
  * @param list The list which should be reversed.
  * @return Either an exception or the reversed list.
  */
-extern LimeResult lime_list_reverse(LimeStack stack, LimeValue list);
+extern BowlResult bowl_list_reverse(BowlStack stack, BowlValue list);
 
 /**
  * The constructor for map values. 
@@ -468,7 +468,7 @@ extern LimeResult lime_list_reverse(LimeStack stack, LimeValue list);
  * @param capacity The number of buckets this map should have.
  * @return Either an exception (e.g. in case of a heap overflow) or the map value.
  */
-extern LimeResult lime_map(LimeStack stack, u64 capacity);
+extern BowlResult bowl_map(BowlStack stack, u64 capacity);
 
 /**
  * The constructor for number values. 
@@ -476,7 +476,7 @@ extern LimeResult lime_map(LimeStack stack, u64 capacity);
  * @param value The IEEE 754 encoded value with double precision.
  * @return Either an exception (e.g. in case of a heap overflow) or the number value.
  */
-extern LimeResult lime_number(LimeStack stack, double value);
+extern BowlResult bowl_number(BowlStack stack, double value);
 
 /**
  * The constructor for library values. 
@@ -484,7 +484,7 @@ extern LimeResult lime_number(LimeStack stack, double value);
  * @param path The path to the shared library.
  * @return Either an exception (e.g. in case of a heap overflow) or the library value.
  */
-extern LimeResult lime_library(LimeStack stack, char *path);
+extern BowlResult bowl_library(BowlStack stack, char *path);
 
 /**
  * The constructor for boolean values. 
@@ -492,7 +492,7 @@ extern LimeResult lime_library(LimeStack stack, char *path);
  * @param value The boolean value. 
  * @return Either an exception (e.g. in case of a heap overflow) or the boolean value.
  */
-extern LimeResult lime_boolean(LimeStack stack, bool value);
+extern BowlResult bowl_boolean(BowlStack stack, bool value);
 
 /**
  * The constructor for vector values.
@@ -501,7 +501,7 @@ extern LimeResult lime_boolean(LimeStack stack, bool value);
  * @param length The length of the vector.
  * @return Either an exception (e.g. in case of a heap overflow) or the vector value.
  */
-extern LimeResult lime_vector(LimeStack stack, LimeValue value, u64 const length);
+extern BowlResult bowl_vector(BowlStack stack, BowlValue value, u64 const length);
 
 /**
  * The constructor for exception values.
@@ -510,6 +510,6 @@ extern LimeResult lime_vector(LimeStack stack, LimeValue value, u64 const length
  * @param message The value that represents this exception's message.
  * @return Either an exception (e.g. in case of a heap overflow) or the exception value.
  */
-extern LimeResult lime_exception(LimeStack stack, LimeValue cause, LimeValue message);
+extern BowlResult bowl_exception(BowlStack stack, BowlValue cause, BowlValue message);
 
 #endif

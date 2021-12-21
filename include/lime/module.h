@@ -1,7 +1,7 @@
 #ifndef MODULE_H
 #define MODULE_H
 
-#include "lime.h"
+#include "bowl.h"
 
 /**
  * The interface of module functions.
@@ -10,7 +10,7 @@
  * the library value which is associated with the module. It returns
  * either an exception or 'NULL' otherwise.
  */
-typedef LimeValue (*LimeModuleFunction)(LimeStack, LimeValue);
+typedef BowlValue (*BowlModuleFunction)(BowlStack, BowlValue);
 
 /**
  * This function must be implemented by the module author.
@@ -19,7 +19,7 @@ typedef LimeValue (*LimeModuleFunction)(LimeStack, LimeValue);
  * @param library The library value which represents this module.
  * @return Either an exception or 'NULL' if no exception occurred.
  */
-LimeValue lime_module_initialize(LimeStack stack, LimeValue library);
+BowlValue bowl_module_initialize(BowlStack stack, BowlValue library);
 
 /**
  * This function must be implemented by the module author.
@@ -28,6 +28,6 @@ LimeValue lime_module_initialize(LimeStack stack, LimeValue library);
  * @param library The library value which represents this module.
  * @return Either an exception or 'NULL' if no exception occurred.
  */
-LimeValue lime_module_finalize(LimeStack stack, LimeValue library);
+BowlValue bowl_module_finalize(BowlStack stack, BowlValue library);
 
 #endif
