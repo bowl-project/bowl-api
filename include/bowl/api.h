@@ -230,6 +230,40 @@ extern const BowlValue bowl_exception_out_of_heap;
 extern BowlValue bowl_register_function(BowlStack stack, char *name, BowlValue library, BowlFunction function);
 
 /**
+ * A structure which represents function entries.
+ * 
+ * A function entry consists of a name (the name of the function) and a function value. 
+ * Modules may register new functions using this structure.
+ */
+typedef struct {
+    /** The name of this function entry. */
+    char *name;
+    /** The function of this function entry. */
+    BowlFunction function;
+} BowlFunctionEntry;
+
+/**
+ * Registers the provided entry using the function 'bowl_register_function'.
+ * @param stack The current stack of the environment.
+ * @param library The library value to which the associated function belongs. This value may
+ * be 'NULL' if the function belongs to no native library.
+ * @param entry The function entry which should be registered.
+ * @return Either an exception or 'NULL' if no exception occurred.
+ */
+extern BowlValue bowl_register(BowlStack stack, BowlValue library, BowlFunctionEntry entry);
+
+/**
+ * Registers all provided entries using the function 'bowl_register'.
+ * @param stack The current stack of the environment.
+ * @param library The library value to which the associated function belongs. This value may
+ * be 'NULL' if the function belongs to no native library.
+ * @param entries The array of entries which should be registered.
+ * @param entries_length The length of the array of entries.
+ * @return Either an exception or 'NULL' if no exception occurred.
+ */
+extern BowlValue bowl_register_all(BowlStack stack, BowlValue library, BowlFunctionEntry entries[], u64 entries_length);
+
+/**
  * Prints the given value after the provided message.
  * @param value The value to print.
  * @param message The message to print.
