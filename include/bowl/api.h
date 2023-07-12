@@ -98,18 +98,19 @@ if (((value) == NULL && (type) != BowlListValue) || ((value) != NULL && (value)-
     return bowl_format_exception((stack), "argument of illegal type '%s' in function '%s' (expected type '%s')", bowl_value_type(value), __FUNCTION__, bowl_type_name(type))._BOWL_RESULT_VALUE_FIELD_NAME;\
 }
 
+
 /**
- * Defines a new static bowl string on basis of the provided C string literal.
- * @param string The C string literal.
+ * Defines a new static bowl string on basis of the provided unicode string literal.
+ * @param string The unicode string literal using 32-bit unicode codepoints.
  * @return A static definition which is named as given.
  */
-#define BOWL_STATIC_STRING(name, string) \
+#define BOWL_STATIC_UNICODE_STRING(name, string, length) \
 static union {\
     struct {\
         BowlValueType type;\
         BowlValue location;\
         u64 hash;\
-        u64 length;\
+        u64 l ## ength;\
         u8 bytes[sizeof(string)];\
     };\
     struct bowl_value value;\
@@ -117,32 +118,92 @@ static union {\
     .type = BowlStringValue,\
     .location = NULL,\
     .hash = 0,\
-    .length = sizeof(string) - 1,\
-    .bytes = string\
+    .l ## ength = (length),\
+    .bytes = (string)\
 };
 
 /**
- * Defines a new static bowl symbol on basis of the provided C string literal.
- * @param symbol The C string literal.
- * @return A static definition which is named as given.
+ * Defines a new static bowl string on basis of the provided C string literal.
+ * @param string The C string literal.
+ * @return A static definition which is named as given as well as a static initialization code which
+ * initializes the codepoints of the resulting value using the ASCII values in the C string.
  */
-#define BOWL_STATIC_SYMBOL(name, symbol) \
+#define BOWL_STATIC_ASCII_STRING(name, string) \
 static union {\
     struct {\
         BowlValueType type;\
         BowlValue location;\
         u64 hash;\
         u64 length;\
-        u8 bytes[sizeof(symbol)];\
+        u32 codepoints[sizeof(string) - 1];\
+    };\
+    struct bowl_value value;\
+} name = {\
+    .type = BowlStringValue,\
+    .location = NULL,\
+    .hash = 0,\
+    .length = sizeof(string) - 1,\
+};\
+static bool CONCAT(_is_initialized, __LINE__) = false;\
+if (!CONCAT(_is_initialized, __LINE__)) {\
+    for (u64 i = 0; i < sizeof(string) - 1; ++i) {\
+        (name).codepoints[i] = (u32) (string)[i];\
+    }\
+    CONCAT(_is_initialized, __LINE__) = true;\
+}
+
+/**
+ * Defines a new static bowl symbol on basis of the provided unicode string literal.
+ * @param string The unicode string literal using 32-bit unicode codepoints.
+ * @return A static definition which is named as given.
+ */
+#define BOWL_STATIC_UNICODE_SYMBOL(name, string, length) \
+static union {\
+    struct {\
+        BowlValueType type;\
+        BowlValue location;\
+        u64 hash;\
+        u64 l ## ength;\
+        u8 bytes[sizeof(string)];\
     };\
     struct bowl_value value;\
 } name = {\
     .type = BowlSymbolValue,\
     .location = NULL,\
     .hash = 0,\
-    .length = sizeof(symbol) - 1,\
-    .bytes = symbol\
+    .l ## ength = (length),\
+    .bytes = (string)\
 };
+
+/**
+ * Defines a new static bowl symbol on basis of the provided C string literal.
+ * @param symbol The C string literal.
+ * @return A static definition which is named as given as well as a static initialization code which
+ * initializes the codepoints of the resulting value using the ASCII values in the C string.
+ */
+#define BOWL_STATIC_ASCII_SYMBOL(name, symbol) \
+static union {\
+    struct {\
+        BowlValueType type;\
+        BowlValue location;\
+        u64 hash;\
+        u64 length;\
+        u32 codepoints[sizeof(symbol) - 1];\
+    };\
+    struct bowl_value value;\
+} name = {\
+    .type = BowlSymbolValue,\
+    .location = NULL,\
+    .hash = 0,\
+    .length = sizeof(symbol) - 1\
+};\
+static bool CONCAT(_is_initialized, __LINE__) = false;\
+if (!CONCAT(_is_initialized, __LINE__)) {\
+    for (u64 i = 0; i < sizeof(symbol) - 1; ++i) {\
+        (name).codepoints[i] = (u32) (symbol)[i];\
+    }\
+    CONCAT(_is_initialized, __LINE__) = true;\
+}
 
 /**
  * Assigns the provided 'value' to the given 'temporary' variable and checks 
@@ -219,25 +280,42 @@ extern const BowlValue bowl_exception_finalization_failure;
 extern const BowlValue bowl_exception_out_of_heap;
 
 /**
+ * A preallocated string exception which is used whenever a malformed UTF-8
+ * sequence is encountered.
+ */
+extern const BowlValue bowl_exception_malformed_utf8;
+
+/**
+ * A preallocated string exception which is used whenever an incomplete UTF-8
+ * sequence is encountered.
+ */
+extern const BowlValue bowl_exception_incomplete_utf8;
+
+/**
  * Enters the provided function in the dictionary of the current environment.
  * @param stack The current stack of the environment.
  * @param name The name of the function.
+ * @param documentation The documentation of the function (`NULL` in case there is none).
  * @param library The library value to which the function belongs. This value may
  * be 'NULL' if the function belongs to no native library.
  * @param function The function which should be entered.
  * @return Either an exception or 'NULL' if no exception occurred.
  */
-extern BowlValue bowl_register_function(BowlStack stack, char *name, BowlValue library, BowlFunction function);
+extern BowlValue bowl_register_function(BowlStack stack, char *name, char *documentation, BowlValue library, BowlFunction function);
 
 /**
  * A structure which represents function entries.
  * 
- * A function entry consists of a name (the name of the function) and a function value. 
+ * A function entry consists of a name (the name of the function), a documentation
+ * and a function value.
+ * 
  * Modules may register new functions using this structure.
  */
 typedef struct {
     /** The name of this function entry. */
     char *name;
+    /** The documentation of this function entry. */
+    char *documentation;
     /** The function of this function entry. */
     BowlFunction function;
 } BowlFunctionEntry;
@@ -246,7 +324,7 @@ typedef struct {
  * Registers the provided entry using the function 'bowl_register_function'.
  * @param stack The current stack of the environment.
  * @param library The library value to which the associated function belongs. This value may
- * be 'NULL' if the function belongs to no native library.
+ * be 'NULL' if the function does not belong to a native library.
  * @param entry The function entry which should be registered.
  * @return Either an exception or 'NULL' if no exception occurred.
  */
@@ -357,16 +435,6 @@ extern bool bowl_map_subset_of(BowlValue superset, BowlValue subset);
 extern BowlResult bowl_map_put(BowlStack stack, BowlValue map, BowlValue key, BowlValue value);
 
 /**
- * Generates a null-terminated string of the provided value by allocating
- * a fresh copy on the heap. That is, the returned must be freed by the user
- * if it is no longer used.
- * @param value A value of type 'string'.
- * @return A null-terminated string whose logical value is equal to that of the
- * provided value.
- */
-extern char *bowl_string_to_null_terminated(BowlValue value);
-
-/**
  * Checks if the specified library is currently loaded.
  * @param path The file path to the library.
  * @return Whether or not the specified library is currently loaded.
@@ -454,20 +522,38 @@ extern BowlResult bowl_format_exception(BowlStack stack, char *message, ...);
 /**
  * The constructor for symbol values. 
  * @param stack The current stack of the environment.
- * @param bytes The byte data of this symbol.
- * @param length The length of the byte data.
+ * @param codepoints The unicode codepoints of this symbol.
+ * @param length The number of codepoints.
  * @return Either an exception (e.g. in case of a heap overflow) or the symbol.
  */
-extern BowlResult bowl_symbol(BowlStack stack, u8 *bytes, u64 length);
+extern BowlResult bowl_symbol(BowlStack stack, u32 *codepoints, u64 length);
+
+/**
+ * The constructor for symbol values using an UTF-8 encoded string.
+ * @param stack The current stack of the environment.
+ * @param bytes The UTF-8 byte sequence.
+ * @param length The number of bytes in the byte sequence.
+ * @return Either an exception (e.g. in case of a heap overflow) or the symbol.
+ */
+extern BowlResult bowl_symbol_utf8(BowlStack stack, u8 *bytes, u64 length);
 
 /**
  * The constructor for string values. 
  * @param stack The current stack of the environment.
- * @param bytes The byte data of this string.
- * @param length The length of the byte data.
+ * @param bytes The unicode codepoints of this string.
+ * @param length The number of unicode codepoints.
  * @return Either an exception (e.g. in case of a heap overflow) or the string.
  */
-extern BowlResult bowl_string(BowlStack stack, u8 *bytes, u64 length);
+extern BowlResult bowl_string(BowlStack stack, u32 *codepoints, u64 length);
+
+/**
+ * The constructor for string values using an UTF-8 encoded string.
+ * @param stack The current stack of the environment.
+ * @param bytes The UTF-8 byte sequence.
+ * @param length The number of bytes in the byte sequence.
+ * @return Either an exception (e.g. in case of a heap overflow) or the string.
+ */
+extern BowlResult bowl_string_utf8(BowlStack stack, u8 *bytes, u64 length);
 
 /**
  * The constructor for native function values. 
