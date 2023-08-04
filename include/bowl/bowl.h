@@ -187,12 +187,12 @@ struct bowl_value {
             /** The length of this symbol. */
             u64 length;
             /** 
-             * The bytes of this symbol. 
+             * The unicode codepoints of this symbol. 
              * 
-             * This array contains exactly 'length' bytes and is allocated along
+             * This array contains exactly 'length' characters and is allocated along
              * with the instance of this value.
              */
-            u8  bytes[];
+            u32 codepoints[];
         } symbol;
 
         /**
@@ -224,15 +224,14 @@ struct bowl_value {
          * type 'string'.
          */
         struct {
-            /** The length of this string. */
+            /** The number of codepoints in this string. */
             u64 length;
-            /** 
-             * The bytes of this string. 
+            /** The codepoints of this string.
              * 
-             * This array contains exactly 'length' bytes and is allocated along
-             * with the instance of this value.
+             * This array contains exactly 'length' codepoints and is allocated along
+             * with the instance of this value. 
              */
-            u8  bytes[];
+            u32 codepoints[];
         } string;
 
         /**
